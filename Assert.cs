@@ -18,12 +18,12 @@
 			throw new Exception(string.Format("Expected: {0}\tActual: {1}", a, b));
 		}
 
-		public static void AreEqual(IComparable a, IComparable b) {
-			if (Equals(a, b)) {
+		public static void AreEqual(IComparable expected, IComparable actual) {
+			if (Equals(expected, actual)) {
 				return;
 			}
 
-			throw new Exception(string.Format("Expected: {0}\tActual: {1}", a, b));
+			throw new Exception(string.Format("Expected: {0}\tActual: {1}", expected, actual));
 		}
 
 		public static void Pass() { }

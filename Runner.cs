@@ -56,6 +56,7 @@
 			Init();
 
 			test.Pass = true;
+			test.Message = string.Empty;
 			try {
 				test.Method.Invoke(test.Method, new object[] { });
 			} catch (TargetException) {
@@ -77,8 +78,18 @@
 			if (!initComplete) {
 				foreach (MethodInfo init in inits) {
 					try {
+						// If the init has a scene set, load it
+						var attribute = (ClassInitializeAttribute)Attribute.GetCustomAttribute(init, typeof (ClassInitializeAttribute));
+						if (!string.IsNullOrEmpty(attribute.Scene)) {
+							UnityEditor.EditorApplication.OpenScene(attribute.Scene);
+						}
+
 						init.Invoke(init, new object[] { });
 					} catch (Exception e) {
+						if (null != e.InnerException) {
+							e = e.InnerException;
+						}
+
 						Debug.LogException(e);
 					}
 				}
