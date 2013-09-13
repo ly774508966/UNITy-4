@@ -1,9 +1,10 @@
-﻿namespace UNITy {
+﻿namespace UNITy.Editor {
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
 	using System.IO;
 	using System.Reflection;
+	using UnityEditor;
 	using UnityEngine;
 	using UnityObject = UnityEngine.Object;
 
@@ -81,7 +82,7 @@
 						// If the init has a scene set, load it
 						var attribute = (ClassInitializeAttribute)Attribute.GetCustomAttribute(init, typeof (ClassInitializeAttribute));
 						if (!string.IsNullOrEmpty(attribute.Scene)) {
-							UnityEditor.EditorApplication.OpenScene(attribute.Scene);
+							EditorApplication.OpenScene(attribute.Scene);
 						}
 
 						init.Invoke(init, new object[] { });

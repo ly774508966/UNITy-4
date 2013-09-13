@@ -31,19 +31,19 @@
 			}
 		}
 
-		public void InvokeMember<U>(string name, object[] args, out U result) {
-			result = default(U);
-
+		public U InvokeMember<U>(string name, ref object[] args) {
 			try {
 				MethodInfo method = typeof (T).GetMethod(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
 				if (method.ReturnType == typeof (void)) {
 					method.Invoke(INSTANCE, args);
 				} else {
-					result = (U)method.Invoke(INSTANCE, args);
+					return (U)method.Invoke(INSTANCE, args);
 				}
 			} catch (Exception e) {
 				throw new Exception(string.Format("Error invoking member: {0}", name), e);
 			}
+
+			return default(U);
 		}
 
 		public void InvokeMember(string name) {
