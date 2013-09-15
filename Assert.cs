@@ -1,9 +1,7 @@
 ﻿namespace UNITy {
 	using System;
-	using System.Diagnostics;
 
 	public static class Assert {
-		[Conditional("DEBUG")]
 		public static void IsTrue(bool test) {
 			if (test) {
 				return;
