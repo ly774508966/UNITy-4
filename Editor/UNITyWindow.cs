@@ -40,8 +40,11 @@
 
 					foreach (Result result in runner.Tests) {
 						GUILayout.BeginHorizontal();
+						bool finishHorizontal = true;
 
 						if (GUILayout.Button("Run", GUILayout.Width(35), GUILayout.Height(15))) {
+							finishHorizontal = false;
+
 							result.Pass = null;
 							result.Message = null;
 							runner.Run(result);
@@ -50,14 +53,17 @@
 						GUILayout.Label(string.Format("{0}.{1}", result.Method.DeclaringType.Name, result.Method.Name), GUILayout.Width(200));
 						GUILayout.Label(null == result.Pass ? string.Empty : result.Pass.Value ? "Pass" : "Fail", GUILayout.Width(35));
 						GUILayout.Label(result.Message);
-						GUILayout.EndHorizontal();
+
+						if (finishHorizontal) {
+							GUILayout.EndHorizontal();
+						}
 					}
 				}
 			}
 		}
 
 		private void Update() {
-			if (null != runner && running) {
+			if (null != runner && running && null != enumerator) {
 				if (!enumerator.MoveNext()) {
 					running = false;
 				}

@@ -12,9 +12,8 @@
 		private const string DLL_FOLDER = "/../Library/ScriptAssemblies/";
 
 		public readonly List<Result> Tests = new List<Result>();
-		private readonly List<MethodInfo> inits = new List<MethodInfo>();
-
-		private bool initComplete;
+		private readonly Dictionary<string, MethodInfo> inits = new Dictionary<string, MethodInfo>();
+		private readonly Dictionary<string, bool> initComplete = new Dictionary<string, bool>();
 
 		public void Scan() {
 			string dllFolder = Application.dataPath + DLL_FOLDER;
@@ -34,7 +33,8 @@
 						var testMethod = Attribute.GetCustomAttribute(method, typeof (TestMethodAttribute), false) as TestMethodAttribute;
 
 						if (initMethod != null) {
-							inits.Add(method);
+							inits.Add(method.DeclaringType.Name, method);
+							initComplete[method.DeclaringType.Name] = false;
 						} else if (testMethod != null) {
 							Tests.Add(new Result(method));
 						}
@@ -44,17 +44,16 @@
 		}
 
 		public IEnumerator Run() {
-			Init();
-
-			foreach (Result test in Tests) {
-				Run(test);
+			foreach (Result result in Tests) {
+				Init(result.Method.DeclaringType.Name);
+				Run(result);
 
 				yield return null;
 			}
 		}
 
 		public void Run(Result test) {
-			Init();
+			Init(test.Method.DeclaringType.Name);
 
 			test.Pass = true;
 			test.Message = string.Empty;
@@ -75,28 +74,37 @@
 			}
 		}
 
-		private void Init() {
-			if (!initComplete) {
-				foreach (MethodInfo init in inits) {
-					try {
-						// If the init has a scene set, load it
-						var attribute = (ClassInitializeAttribute)Attribute.GetCustomAttribute(init, typeof (ClassInitializeAttribute));
-						if (!string.IsNullOrEmpty(attribute.Scene)) {
-							EditorApplication.OpenScene(attribute.Scene);
-						}
+		private void Init(string className) {
+			if (inits.ContainsKey(className) && !initComplete[className]) {
+				MethodInfo init = inits[className];
 
-						init.Invoke(init, new object[] { });
-					} catch (Exception e) {
-						if (null != e.InnerException) {
-							e = e.InnerException;
-						}
+				Debug.Log(string.Format("Running init for: {0}", className));
 
-						Debug.LogException(e);
+				try {
+					// If the init has a scene set, load it
+					var attribute = (ClassInitializeAttribute)Attribute.GetCustomAttribute(init, typeof (ClassInitializeAttribute));
+
+					Debug.Log(attribute.Scene);
+					Debug.Log(attribute.NewScene);
+					
+					if (!string.IsNullOrEmpty(attribute.Scene)) {
+						EditorApplication.OpenScene(attribute.Scene);
+					} else if (attribute.NewScene) {
+						Debug.Log(attribute.NewScene);
+						EditorApplication.NewScene();
 					}
+
+					init.Invoke(init, new object[] { });
+				} catch (Exception e) {
+					if (null != e.InnerException) {
+						e = e.InnerException;
+					}
+
+					Debug.LogException(e);
 				}
 			}
 
-			initComplete = true;
+			initComplete[className] = true;
 		}
 	}
 }
