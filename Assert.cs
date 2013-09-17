@@ -26,8 +26,6 @@
 			throw new Exception(string.Format("Expected: {0}\tActual: {1}", expected, actual));
 		}
 
-		public static void Pass() { }
-
 		public static void Fail() {
 			throw new Exception("Failed");
 		}

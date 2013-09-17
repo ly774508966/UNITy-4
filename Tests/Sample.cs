@@ -8,18 +8,17 @@
 		}
 
 		[TestMethod]
-		public static void ForcePass() {
-			Assert.Pass();
-		}
+		public static void ForcePass() { }
 
 		[TestMethod]
 		public static void ForceFail() {
-			Assert.Fail();
+			var numbers = new int[10];
+			if (numbers.Length > 10) {
+				Assert.Fail();
+			}
 		}
 
 		[TestMethod]
-		public void MarkAsStatic() {
-			Assert.Pass();
-		}
+		public void MarkAsStatic() { }
 	}
 }

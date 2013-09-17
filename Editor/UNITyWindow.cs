@@ -1,13 +1,13 @@
 ﻿namespace UNITy.Editor {
+	using System;
 	using System.Collections;
 	using UnityEditor;
 	using UnityEngine;
 
 	public class UNITyWindow : EditorWindow {
-		private bool running;
-
-		private Runner runner;
-		private IEnumerator enumerator;
+		public bool Running;
+		public Runner Runner;
+		public IEnumerator Enumerator;
 
 		[MenuItem("Window/UNITy")]
 		private static void Init() {
@@ -16,56 +16,84 @@
 		}
 
 		private void OnGUI() {
-			if (!EditorApplication.isCompiling) {
-				GUILayout.BeginHorizontal();
+			if (EditorApplication.isCompiling) {
+				return;
+			}
+
+			if (null == Runner) {
+				EditorGUILayout.BeginHorizontal();
+
 				if (GUILayout.Button("Scan for Tests", GUILayout.Width(100), GUILayout.Height(20))) {
-					runner = new Runner();
-					runner.Scan();
+					Runner = new Runner();
+					Runner.Scan();
 				}
 
-				if (null != runner) {
-					if (GUILayout.Button("Run all Tests", GUILayout.Width(100), GUILayout.Height(20))) {
-						enumerator = runner.Run();
-						running = true;
-					}
+				EditorGUILayout.EndHorizontal();
+			} else {
+				EditorGUILayout.BeginHorizontal();
 
-					GUILayout.EndHorizontal();
+				if (GUILayout.Button("Run all Tests", GUILayout.Width(100), GUILayout.Height(20))) {
+					Enumerator = Runner.Run();
+					Running = true;
+				}
 
-					GUILayout.BeginHorizontal();
-					GUILayout.Label(string.Empty, GUILayout.Width(35));
-					GUILayout.Label("Test", GUILayout.Width(200));
-					GUILayout.Label("Pass?", GUILayout.Width(35));
-					GUILayout.Label("Message");
-					GUILayout.EndHorizontal();
+				EditorGUILayout.EndHorizontal();
 
-					foreach (Result result in runner.Tests) {
-						GUILayout.BeginHorizontal();
-						bool finishHorizontal = true;
+				GUILayout.BeginHorizontal();
+				EditorGUILayout.LabelField(string.Empty, GUILayout.Width(35));
+				EditorGUILayout.LabelField("Test", GUILayout.Width(200));
+				EditorGUILayout.LabelField("Pass?", GUILayout.Width(35));
+				EditorGUILayout.LabelField("Message");
+				GUILayout.EndHorizontal();
+
+				Type lastType = null;
+				foreach (Result result in Runner.Tests) {
+					bool finishHorizontal = true;
+
+					if (result.Method.DeclaringType != lastType) {
+						GUILayout.Box(string.Empty, new[] { GUILayout.ExpandWidth(true), GUILayout.Height(1) });
+						EditorGUILayout.BeginHorizontal();
 
 						if (GUILayout.Button("Run", GUILayout.Width(35), GUILayout.Height(15))) {
 							finishHorizontal = false;
 
 							result.Pass = null;
 							result.Message = null;
-							runner.Run(result);
+							Enumerator = Runner.Run(result.Method.DeclaringType);
+							Running = true;
 						}
 
-						GUILayout.Label(string.Format("{0}.{1}", result.Method.DeclaringType.Name, result.Method.Name), GUILayout.Width(200));
-						GUILayout.Label(null == result.Pass ? string.Empty : result.Pass.Value ? "Pass" : "Fail", GUILayout.Width(35));
-						GUILayout.Label(result.Message);
-
-						if (finishHorizontal) {
-							GUILayout.EndHorizontal();
-						}
+						EditorGUILayout.LabelField(string.Format("{0}.*", result.Method.DeclaringType.Name));
+						EditorGUILayout.EndHorizontal();						
 					}
+					
+					EditorGUILayout.BeginHorizontal();
+
+					if (GUILayout.Button("Run", GUILayout.Width(35), GUILayout.Height(15))) {
+						finishHorizontal = false;
+
+						result.Pass = null;
+						result.Message = null;
+						Runner.Run(result);
+					}
+
+					EditorGUILayout.LabelField(string.Format("{0}.{1}", result.Method.DeclaringType.Name, result.Method.Name), GUILayout.Width(200));
+					EditorGUILayout.LabelField(null == result.Pass ? string.Empty : result.Pass.Value ? "Pass" : "Fail", GUILayout.Width(35));
+					EditorGUILayout.LabelField(result.Message);
+
+					if (finishHorizontal) {
+						EditorGUILayout.EndHorizontal();
+					}
+
+					lastType = result.Method.DeclaringType;
 				}
 			}
 		}
 
 		private void Update() {
-			if (null != runner && running && null != enumerator) {
-				if (!enumerator.MoveNext()) {
-					running = false;
+			if (null != Runner && Running && null != Enumerator) {
+				if (!Enumerator.MoveNext()) {
+					Running = false;
 				}
 			}
 

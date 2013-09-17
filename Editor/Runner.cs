@@ -12,8 +12,8 @@
 		private const string DLL_FOLDER = "/../Library/ScriptAssemblies/";
 
 		public readonly List<Result> Tests = new List<Result>();
-		private readonly Dictionary<string, MethodInfo> inits = new Dictionary<string, MethodInfo>();
-		private readonly Dictionary<string, bool> initComplete = new Dictionary<string, bool>();
+		private readonly Dictionary<Type, MethodInfo> inits = new Dictionary<Type, MethodInfo>();
+		private readonly Dictionary<Type, bool> initComplete = new Dictionary<Type, bool>();
 
 		public void Scan() {
 			string dllFolder = Application.dataPath + DLL_FOLDER;
@@ -33,8 +33,8 @@
 						var testMethod = Attribute.GetCustomAttribute(method, typeof (TestMethodAttribute), false) as TestMethodAttribute;
 
 						if (initMethod != null) {
-							inits.Add(method.DeclaringType.Name, method);
-							initComplete[method.DeclaringType.Name] = false;
+							inits.Add(method.DeclaringType, method);
+							initComplete[method.DeclaringType] = false;
 						} else if (testMethod != null) {
 							Tests.Add(new Result(method));
 						}
@@ -45,15 +45,26 @@
 
 		public IEnumerator Run() {
 			foreach (Result result in Tests) {
-				Init(result.Method.DeclaringType.Name);
+				Init(result.Method.DeclaringType);
 				Run(result);
 
 				yield return null;
 			}
 		}
 
+		public IEnumerator Run(Type type) {
+			foreach (Result result in Tests) {
+				if (type == result.Method.DeclaringType) {
+					Init(type);
+					Run(result);
+				}
+
+				yield return null;
+			}
+		}
+
 		public void Run(Result test) {
-			Init(test.Method.DeclaringType.Name);
+			Init(test.Method.DeclaringType);
 
 			test.Pass = true;
 			test.Message = string.Empty;
@@ -74,23 +85,18 @@
 			}
 		}
 
-		private void Init(string className) {
-			if (inits.ContainsKey(className) && !initComplete[className]) {
-				MethodInfo init = inits[className];
-
-				Debug.Log(string.Format("Running init for: {0}", className));
+		private void Init(Type type) {
+			if (inits.ContainsKey(type) && !initComplete[type]) {
+				MethodInfo init = inits[type];
 
 				try {
 					// If the init has a scene set, load it
 					var attribute = (ClassInitializeAttribute)Attribute.GetCustomAttribute(init, typeof (ClassInitializeAttribute));
 
-					Debug.Log(attribute.Scene);
-					Debug.Log(attribute.NewScene);
-					
 					if (!string.IsNullOrEmpty(attribute.Scene)) {
+						EditorApplication.NewScene();
 						EditorApplication.OpenScene(attribute.Scene);
 					} else if (attribute.NewScene) {
-						Debug.Log(attribute.NewScene);
 						EditorApplication.NewScene();
 					}
 
@@ -104,7 +110,14 @@
 				}
 			}
 
-			initComplete[className] = true;
+			// reset the init of other tests in case they need to reload their own scene
+			var keys = new Type[initComplete.Count];
+			initComplete.Keys.CopyTo(keys, 0);
+			foreach (Type key in keys) {
+				initComplete[key] = false;
+			}
+
+			initComplete[type] = true;
 		}
 	}
 }
