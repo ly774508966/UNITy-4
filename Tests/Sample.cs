@@ -8,7 +8,7 @@
 		}
 
 		[TestMethod]
-		public static void ForcePass() { }
+		public static void ForcePass() {}
 
 		[TestMethod]
 		public static void ForceFail() {
@@ -19,6 +19,6 @@
 		}
 
 		[TestMethod]
-		public void MarkAsStatic() { }
+		public void MarkAsStatic() {}
 	}
 }

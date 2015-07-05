@@ -5,21 +5,22 @@
 	using UnityEngine;
 
 	public class UNITyWindow : EditorWindow {
-		public bool Running;
-		public Runner Runner;
 		public IEnumerator Enumerator;
+		public Runner Runner;
+		public bool Running;
 
 		public Vector2 ScrollPos = Vector2.zero;
 
 		[MenuItem("Window/UNITy")]
 		private static void Init() {
 			var window = GetWindow<UNITyWindow>();
-			window.title = "UNITy";
+			window.titleContent = new GUIContent("UNITy");
 		}
 
 		private void OnGUI() {
-			ScrollPos = GUI.BeginScrollView(new Rect(0, 0, position.width, position.height), ScrollPos, new Rect(0, 0, 2000, 2000));
-			
+			ScrollPos = GUI.BeginScrollView(new Rect(0, 0, position.width, position.height), ScrollPos,
+											new Rect(0, 0, 2000, 2000));
+
 			if (EditorApplication.isCompiling) {
 				GUI.EndScrollView();
 				return;
@@ -56,7 +57,7 @@
 					bool finishHorizontal = true;
 
 					if (result.Method.DeclaringType != lastType) {
-						GUILayout.Box(string.Empty, new[] { GUILayout.Width(2000), GUILayout.Height(1) });
+						GUILayout.Box(string.Empty, new[] {GUILayout.Width(2000), GUILayout.Height(1)});
 						EditorGUILayout.BeginHorizontal(GUILayout.Width(2000));
 
 						if (GUILayout.Button("Run", GUILayout.Width(35), GUILayout.Height(15))) {
@@ -82,14 +83,16 @@
 						Runner.Run(result);
 					}
 
-					EditorGUILayout.LabelField(string.Format("{0}.{1}", result.Method.DeclaringType.Name, result.Method.Name), GUILayout.Width(200));
+					EditorGUILayout.LabelField(string.Format("{0}.{1}", result.Method.DeclaringType.Name, result.Method.Name),
+											   GUILayout.Width(200));
 
 					Color contentColor = GUI.contentColor;
 					if (null != result.Pass) {
 						GUI.contentColor = result.Pass.Value ? Color.green : Color.red;
 					}
 
-					EditorGUILayout.LabelField(null == result.Pass ? string.Empty : result.Pass.Value ? "Pass" : "Fail", GUILayout.Width(35));
+					EditorGUILayout.LabelField(null == result.Pass ? string.Empty : result.Pass.Value ? "Pass" : "Fail",
+											   GUILayout.Width(35));
 
 					if (null != result.Message) {
 						GUI.contentColor = Color.Lerp(Color.black, Color.red, 0.95f);
@@ -111,7 +114,9 @@
 		}
 
 		private void Update() {
-			if (null != Runner && Running && null != Enumerator) {
+			if (null != Runner
+				&& Running
+				&& null != Enumerator) {
 				if (!Enumerator.MoveNext()) {
 					Running = false;
 				}

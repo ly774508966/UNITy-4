@@ -15,7 +15,9 @@
 		public void GetMember<U>(string name, out U result) {
 			result = default(U);
 			try {
-				FieldInfo field = typeof (T).GetField(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
+				FieldInfo field = typeof (T).GetField(name,
+													  BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static
+													  | BindingFlags.Instance);
 				result = (U)field.GetValue(INSTANCE);
 			} catch (Exception e) {
 				throw new Exception(string.Format("Error getting member: {0}", name), e);
@@ -24,7 +26,9 @@
 
 		public void SetMember<U>(string name, U value) {
 			try {
-				FieldInfo field = typeof (T).GetField(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
+				FieldInfo field = typeof (T).GetField(name,
+													  BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static
+													  | BindingFlags.Instance);
 				field.SetValue(INSTANCE, value);
 			} catch (Exception e) {
 				throw new Exception(string.Format("Error setting member: {0}", name), e);
@@ -33,7 +37,9 @@
 
 		public U InvokeMember<U>(string name, ref object[] args) {
 			try {
-				MethodInfo method = typeof (T).GetMethod(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
+				MethodInfo method = typeof (T).GetMethod(name,
+														 BindingFlags.Public | BindingFlags.NonPublic
+														 | BindingFlags.Static | BindingFlags.Instance);
 				if (method.ReturnType == typeof (void)) {
 					method.Invoke(INSTANCE, args);
 				} else {
@@ -48,8 +54,10 @@
 
 		public void InvokeMember(string name) {
 			try {
-				MethodInfo method = typeof (T).GetMethod(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
-				method.Invoke(INSTANCE, new object[] { });
+				MethodInfo method = typeof (T).GetMethod(name,
+														 BindingFlags.Public | BindingFlags.NonPublic
+														 | BindingFlags.Static | BindingFlags.Instance);
+				method.Invoke(INSTANCE, new object[] {});
 			} catch (Exception e) {
 				throw new Exception(string.Format("Error invoking member: {0}", name), e);
 			}

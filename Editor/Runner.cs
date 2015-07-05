@@ -12,8 +12,8 @@
 		private const string DLL_FOLDER = "/../Library/ScriptAssemblies/";
 
 		public readonly List<Result> Tests = new List<Result>();
-		private readonly Dictionary<Type, MethodInfo> inits = new Dictionary<Type, MethodInfo>();
 		private readonly Dictionary<Type, bool> initComplete = new Dictionary<Type, bool>();
+		private readonly Dictionary<Type, MethodInfo> inits = new Dictionary<Type, MethodInfo>();
 
 		public void Scan() {
 			string dllFolder = Application.dataPath + DLL_FOLDER;
@@ -29,10 +29,12 @@
 					MethodInfo[] methods = type.GetMethods();
 
 					foreach (MethodInfo method in methods) {
-						var initMethod = Attribute.GetCustomAttribute(method, typeof (ClassInitializeAttribute), false) as ClassInitializeAttribute;
+						var initMethod =
+							Attribute.GetCustomAttribute(method, typeof (ClassInitializeAttribute), false) as ClassInitializeAttribute;
 						var testMethod = Attribute.GetCustomAttribute(method, typeof (TestMethodAttribute), false) as TestMethodAttribute;
 
-						if (initMethod != null) {
+						if (null != initMethod
+							&& null != method.DeclaringType) {
 							inits.Add(method.DeclaringType, method);
 							initComplete[method.DeclaringType] = false;
 						} else if (testMethod != null) {
@@ -69,7 +71,7 @@
 			test.Pass = true;
 			test.Message = string.Empty;
 			try {
-				test.Method.Invoke(test.Method, new object[] { });
+				test.Method.Invoke(test.Method, new object[] {});
 			} catch (TargetException) {
 				test.Message = "TargetException detected. Please ensure test methods are marked as static";
 				test.Pass = null;
@@ -86,7 +88,8 @@
 		}
 
 		private void Init(Type type) {
-			if (inits.ContainsKey(type) && !initComplete[type]) {
+			if (inits.ContainsKey(type)
+				&& !initComplete[type]) {
 				MethodInfo init = inits[type];
 
 				try {
@@ -100,7 +103,7 @@
 						EditorApplication.NewScene();
 					}
 
-					init.Invoke(init, new object[] { });
+					init.Invoke(init, new object[] {});
 				} catch (Exception e) {
 					if (null != e.InnerException) {
 						e = e.InnerException;

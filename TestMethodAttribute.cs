@@ -2,5 +2,5 @@
 	using System;
 
 	[AttributeUsage(AttributeTargets.Method)]
-	public class TestMethodAttribute : Attribute { }
+	public class TestMethodAttribute : Attribute {}
 }

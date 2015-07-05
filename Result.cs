@@ -2,13 +2,13 @@
 	using System.Reflection;
 
 	public class Result {
-		public bool? Pass;
 		public string Message;
-
-		public MethodInfo Method { get; private set; }
+		public bool? Pass;
 
 		public Result(MethodInfo method) {
 			Method = method;
 		}
+
+		public MethodInfo Method { get; private set; }
 	}
 }
